@@ -199,7 +199,7 @@ btnTurbidity.addEventListener("click", function () {
 //分析
 analyzeBtn.addEventListener("click", function () {
     const color = getAverageColor(redBox1);
-    result.innerHTML = `R: ${color.r.toFixed(2)}<br>G: ${color.g.toFixed(2)}<br>B: ${color.b.toFixed(2)}`;
+    result.innerHTML = `R: ${color.r.toFixed(2)} G: ${color.g.toFixed(2)} B: ${color.b.toFixed(2)}`;
     const labelText = boxLabel.textContent.trim();
     
     if(labelText === "酸鹼值")
