@@ -156,9 +156,13 @@ function getAverageColor(box) {
 //拖曳紅框
 makeDraggable(redBox1);
 
+//判斷手機
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 if (isMobile) {
     document.body.style.overflow = 'hidden';
+    const redBox1 = document.getElementById('redBox1');
+    redBox1.style.top = '140px';
+    redBox1.style.left = '100px';
 }
 
 //按鈕功能
