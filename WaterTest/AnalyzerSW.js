@@ -1,11 +1,12 @@
 // 攝影機與紅框設定
 const video = document.getElementById('camera');
+const btnPH = document.getElementById('btnPH');
+const btnOxygen = document.getElementById('btnOxygen');
+const btnTurbidity = document.getElementById('btnTurbidity');
 const analyzeBtn = document.getElementById('analyzeBtn');
-const stopBtn = document.getElementById('stopBtn');
 const result = document.getElementById('result');
 const redBox1 = document.getElementById('redBox1');
-const redBox2 = document.getElementById('redBox2');
-const analyzingOverlay = document.getElementById('analyzingOverlay');
+const boxLabel = document.getElementById('boxLabel');
 
 let stream;
 let interval;
@@ -13,7 +14,6 @@ let logRGBValues = [];
 
 let redBoxPositions = {
     redBox1: { left: 0, top: 0 },
-    redBox2: { left: 0, top: 0 },
 };
 
 // 啟動攝影機功能
@@ -33,15 +33,19 @@ async function startCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
         video.onloadedmetadata = () => video.play();
-
+        isCameraNotReady = false;
         analyzeBtn.disabled = false;
-        stopBtn.disabled = true;
+
     } catch (err) {
         console.error("攝影機錯誤: ", err);
         result.innerHTML = `錯誤：無法啟動攝影機。${err.message}`;
+        alert("請開啟攝像頭！")
         analyzeBtn.disabled = true;
     }
 }
+
+// 開啟相機
+startCamera()
 
 // 紅框拖曳功能
 function makeDraggable(box) {
@@ -149,55 +153,72 @@ function getAverageColor(box) {
     return { r: r / count, g: g / count, b: b / count };
 }
 
-// 啟動分析流程
-analyzeBtn.addEventListener('click', () => {
-    analyzingOverlay.style.display = 'flex';
-    result.innerHTML = '';
-    logRGBValues = [];
-    let count = 0;
-    const maxCount = 180;
-
-    interval = setInterval(() => {
-        const c1 = getAverageColor(redBox1);
-        const c2 = getAverageColor(redBox2);
-
-        const deltaR = c2.r - c1.r;
-        const deltaG = c2.g - c1.g;
-        const deltaB = c2.b - c1.b;
-
-        const slope = (deltaR + deltaG + deltaB) / 3;
-        logRGBValues.push(slope);
-
-        count++;
-        if (count >= maxCount) {
-            clearInterval(interval);
-            analyzingOverlay.style.display = 'none';
-            stopBtn.style.display = 'none';
-            analyzeBtn.disabled = false;
-
-            const trimmed = logRGBValues.slice(10, logRGBValues.length - 10);
-            const average = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
-
-            localStorage.setItem("analyzeResult", average.toFixed(5));
-            window.location.href = "Results.html";
-        }
-    }, 100);
-
-    stopBtn.style.display = 'inline-block';
-    stopBtn.disabled = false;
-    analyzeBtn.disabled = true;
-});
-
-// 停止分析流程
-stopBtn.addEventListener('click', () => {
-    clearInterval(interval);
-    analyzingOverlay.style.display = 'none';
-    stopBtn.style.display = 'none';
-    analyzeBtn.disabled = false;
-    result.innerHTML = '已中止分析';
-});
-
-// 初始化攝影機與拖曳紅框
-startCamera();
+//拖曳紅框
 makeDraggable(redBox1);
-makeDraggable(redBox2);
+
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+if (isMobile) {
+    document.body.style.overflow = 'hidden';
+}
+
+//按鈕功能
+//pH
+btnPH.addEventListener("click", function () {
+        // 1. 改紅框邊框顏色
+        redBox1.style.borderColor = '#1976D2';
+
+        // 2. 改標籤文字
+         boxLabel.textContent = "酸鹼值";
+
+        //算式
+
+});
+
+//溶氧
+btnOxygen.addEventListener("click", function () {
+        // 1. 改紅框邊框顏色
+        redBox1.style.borderColor = '#4CAF50';
+
+        // 2. 改標籤文字
+         boxLabel.textContent = "溶氧量";
+
+        //算式
+});
+
+//濁度
+btnTurbidity.addEventListener("click", function () {
+        // 1. 改紅框邊框顏色
+        redBox1.style.borderColor = '#EF6C00';
+
+        // 2. 改標籤文字
+         boxLabel.textContent = "濁度";
+
+        //算式
+});
+
+//分析
+analyzeBtn.addEventListener("click", function () {
+    const color = getAverageColor(redBox1);
+    result.innerHTML = `R: ${color.r.toFixed(2)}<br>G: ${color.g.toFixed(2)}<br>B: ${color.b.toFixed(2)}`;
+    const labelText = boxLabel.textContent.trim();
+    
+    if(labelText === "酸鹼值")
+    {
+        // pH值 算式
+
+    }
+    else if(labelText === "溶氧量")
+    {
+        //溶氧量 算式
+
+    }
+    else if(labelText === "濁度")
+    {
+        //濁度 算式
+
+    }
+    else
+    {
+        alert("請選擇檢測項目！");
+    }
+});
