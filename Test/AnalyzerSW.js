@@ -4,6 +4,7 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const stopBtn = document.getElementById('stopBtn');
 const result = document.getElementById('result');
 const redBox1 = document.getElementById('redBox1');
+const redBox2 = document.getElementById('redBox2');
 const analyzingOverlay = document.getElementById('analyzingOverlay');
 
 let stream;
@@ -12,6 +13,7 @@ let logRGBValues = [];
 
 let redBoxPositions = {
     redBox1: { left: 0, top: 0 },
+    redBox2: { left: 0, top: 0 },
 };
 
 // 啟動攝影機功能
@@ -147,6 +149,55 @@ function getAverageColor(box) {
     return { r: r / count, g: g / count, b: b / count };
 }
 
+// 啟動分析流程
+analyzeBtn.addEventListener('click', () => {
+    analyzingOverlay.style.display = 'flex';
+    result.innerHTML = '';
+    logRGBValues = [];
+    let count = 0;
+    const maxCount = 180;
+
+    interval = setInterval(() => {
+        const c1 = getAverageColor(redBox1);
+        const c2 = getAverageColor(redBox2);
+
+        const deltaR = c2.r - c1.r;
+        const deltaG = c2.g - c1.g;
+        const deltaB = c2.b - c1.b;
+
+        const slope = (deltaR + deltaG + deltaB) / 3;
+        logRGBValues.push(slope);
+
+        count++;
+        if (count >= maxCount) {
+            clearInterval(interval);
+            analyzingOverlay.style.display = 'none';
+            stopBtn.style.display = 'none';
+            analyzeBtn.disabled = false;
+
+            const trimmed = logRGBValues.slice(10, logRGBValues.length - 10);
+            const average = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+
+            localStorage.setItem("analyzeResult", average.toFixed(5));
+            window.location.href = "Results.html";
+        }
+    }, 100);
+
+    stopBtn.style.display = 'inline-block';
+    stopBtn.disabled = false;
+    analyzeBtn.disabled = true;
+});
+
+// 停止分析流程
+stopBtn.addEventListener('click', () => {
+    clearInterval(interval);
+    analyzingOverlay.style.display = 'none';
+    stopBtn.style.display = 'none';
+    analyzeBtn.disabled = false;
+    result.innerHTML = '已中止分析';
+});
+
 // 初始化攝影機與拖曳紅框
 startCamera();
 makeDraggable(redBox1);
+makeDraggable(redBox2);
